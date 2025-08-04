@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Responsive web-based tools for converting between RPM and speed for calibrating and configuring robotics.">
+  <meta name="keywords" content="online, web, convert, conversion, tool, rpm, speed, mph, meters, mps, robotics, ros2, ros, robots, responsive">
+  <meta name="author" content="Dominick Lee">
+  <title>OmniBot Tools</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 4.4.1 CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <style>
+    input[type="number"] {
+      max-width: 200px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="#">OmniBot Tools</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+  
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="#" target="_blank">GitHub Repo</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="https://vimpaact.gyropalm.com/" target="_blank">About VIMPAACT</a>
+      </li>   
+    </ul>
+  </div>
+</nav>
+
+<!-- Tabbed Content -->
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <!-- Nav Tabs -->
+      <ul class="nav nav-tabs" id="converterTabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="rpm-tab" data-toggle="tab" href="#rpm" role="tab" aria-controls="rpm" aria-selected="true">RPM to Speed</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="speed-tab" data-toggle="tab" href="#speed" role="tab" aria-controls="speed" aria-selected="false">Speed to RPM</a>
+        </li>
+      </ul>
+
+      <!-- Tab Panes -->
+      <div class="tab-content p-4 border border-top-0" id="converterTabContent">
+        <!-- RPM to Speed -->
+        <div class="tab-pane fade show active" id="rpm" role="tabpanel" aria-labelledby="rpm-tab">
+          <div class="form-group">
+            <label for="rpmInput">RPM</label>
+            <input type="number" step="0.001" class="form-control" id="rpmInput">
+          </div>
+          <div class="form-group">
+            <label for="wheelDiameterInput">Wheel Diameter (mm)</label>
+            <input type="number" step="0.001" class="form-control" id="wheelDiameterInput">
+          </div>
+          <div class="form-group">
+            <label>Speed (m/s)</label>
+            <input type="text" readonly class="form-control" id="speedOutputMS">
+          </div>
+          <div class="form-group">
+            <label>Speed (mph)</label>
+            <input type="text" readonly class="form-control" id="speedOutputMPH">
+          </div>
+		  
+			<hr />
+			<p><strong>Formula:</strong></p>
+			<p>
+			Speed (m/s) = (π × Diameter in meters) × (RPM ÷ 60)<br />
+			Speed (mph) = Speed (m/s) × 2.23694
+			</p>
+        </div>
+
+        <!-- Speed to RPM -->
+        <div class="tab-pane fade" id="speed" role="tabpanel" aria-labelledby="speed-tab">
+          <div class="form-group">
+            <label for="speedInputMS">Speed (m/s)</label>
+            <input type="number" step="0.001" class="form-control" id="speedInputMS">
+          </div>
+          <div class="form-group">
+            <label for="speedInputMPH">Speed (mph)</label>
+            <input type="number" step="0.001" class="form-control" id="speedInputMPH">
+          </div>
+          <div class="form-group">
+            <label for="wheelDiameterInput2">Wheel Diameter (mm)</label>
+            <input type="number" step="0.001" class="form-control" id="wheelDiameterInput2">
+          </div>
+          <div class="form-group">
+            <label>RPM</label>
+            <input type="text" readonly class="form-control" id="rpmOutput">
+          </div>
+		  
+			<hr />
+			<p><strong>Formula:</strong></p>
+			<p>
+			RPM = (Speed in m/s ÷ (π × Diameter in meters)) × 60<br />
+			or<br />
+			RPM = ((Speed in mph ÷ 2.23694) ÷ (π × Diameter in meters)) × 60
+			</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery 3.5.1, Popper, Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+<script>
+  function round2(val) {
+    return Math.round(val * 100) / 100;
+  }
+  
+  function round3(val) {
+    return Math.round(val * 1000) / 1000;
+  }
+
+  function rpmToSpeed() {
+    let rpm = parseFloat($('#rpmInput').val());
+    let diameter = parseFloat($('#wheelDiameterInput').val()); // mm
+
+    if (!isNaN(rpm) && !isNaN(diameter) && diameter > 0) {
+      let radius_m = diameter / 2000; // mm to meters and radius
+      let speed_ms = (2 * Math.PI * radius_m) * (rpm / 60);
+      let speed_mph = speed_ms * 2.23694;
+
+      $('#speedOutputMS').val(round3(speed_ms));
+      $('#speedOutputMPH').val(round3(speed_mph));
+    } else {
+      $('#speedOutputMS, #speedOutputMPH').val('');
+    }
+  }
+
+  function speedToRPM() {
+    let speed_ms = parseFloat($('#speedInputMS').val());
+    let speed_mph = parseFloat($('#speedInputMPH').val());
+    let diameter = parseFloat($('#wheelDiameterInput2').val()); // mm
+
+    if (!isNaN(diameter) && diameter > 0) {
+      let radius_m = diameter / 2000;
+
+      if (!isNaN(speed_ms)) {
+        let rpm = (speed_ms / (2 * Math.PI * radius_m)) * 60;
+        $('#rpmOutput').val(round3(rpm));
+		$('#speedInputMPH').val('') ;
+      } else if (!isNaN(speed_mph)) {
+        let speed_ms_from_mph = speed_mph / 2.23694;
+        let rpm = (speed_ms_from_mph / (2 * Math.PI * radius_m)) * 60;
+        $('#rpmOutput').val(round3(rpm));
+		$('#speedInputMS').val('') ;
+      } else {
+        $('#rpmOutput').val('');
+      }
+    } else {
+      $('#rpmOutput').val('');
+    }
+  }
+
+	$(function () {
+	  // Only sync when wheelDiameterInput is changed
+	  $('#wheelDiameterInput').on('change', function () {
+		const val = parseFloat($(this).val());
+		if (!isNaN(val)) {
+		  $('#wheelDiameterInput2').val(val);
+		  rpmToSpeed();
+		  speedToRPM();
+		}
+	  });
+
+	  // Only sync when wheelDiameterInput2 is changed
+	  $('#wheelDiameterInput2').on('change', function () {
+		const val = parseFloat($(this).val());
+		if (!isNaN(val)) {
+		  $('#wheelDiameterInput').val(val);
+		  speedToRPM();
+		  rpmToSpeed();
+		}
+	  });
+
+	  $('#rpmInput').on('change', rpmToSpeed);
+	  
+	  $('#speedInputMS').on('input', function () {
+		$('#speedInputMPH').val('');
+		speedToRPM();
+	  });
+
+	  $('#speedInputMPH').on('input', function () {
+		$('#speedInputMS').val('');
+		speedToRPM();
+	  });
+	});
+</script>
+
+</body>
+</html>
